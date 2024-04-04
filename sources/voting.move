@@ -17,7 +17,7 @@ struct candidateVotesCount has store, key {
     voteCount: SimpleMap<address, u64> 
 }
 
-public fun registerVoters(acc: &signer) {
+public entry fun registerVoters(acc: &signer) {
    let registered : bool = simple_map::contains_key(&voteTracking, addr);
    assert!(registered == true, 3);
 
@@ -28,7 +28,7 @@ public fun registerVoters(acc: &signer) {
 
 }
 
-  public fun vote(acc: &signer, candidAdd: address) {
+  public entry fun vote(acc: &signer, candidAdd: address) {
    let addr = signer::address_of(acc);
    let registered : bool = simple_map::contains_key(&voteTracking, addr);
    let hasVoted : bool = simple_map::find(&voteTracking, addr);
@@ -53,7 +53,7 @@ return candidVoteCount;
 
 }
 
-public fun getWinner() : address {
+public entry fun getWinner() : address {
    let size  = simple_map::length(&candidateVotesCount);
    let keys : vector<u64> = simple_map::keys(&candidateVotesCount);
     
@@ -70,6 +70,47 @@ public fun getWinner() : address {
     };
     i = i + 1;
  return winner;
+}
+
+
+
+
+
+
+#[test(admin = @my_addrx)]
+public entry fun test_flow(admin: signer)  {
+    let addr2 = @0x2;
+    let voter = account::create_account_for_test(@0x3)
+    registerVoters(&admin);
+    vote(&admin, addr2);
+    getCandidateVoteCount(addr2);
+    getNumVoters();
+    getWinner();
+}
+
+
+#[test(admin = @my_addrx)]
+#[expected_failure(abort_code = USER_IS_NOT_REGISTERED)]
+public entry fun test_vote_without_being_registered(admin: signer) {
+    let addr2 = @0x2;
+    vote(&admin, addr2);
+}
+
+
+#[test(admin = @my_addrx)]
+#[expected_failure(abort_code = USER_HAS_ALREADY_VOTED)]
+public entry fun test_vote_twice(admin: signer)  {
+    let addr2 = @0x2;
+    registerVoters(&admin);
+    vote(&admin, addr2);
+    vote(&admin, addr2);
+}
+
+#[test(admin = @my_addrx)]
+#[expected_failure(abort_code = USER_IS_ALREADY_REGISTERED:)]
+public entry fun test_user_already_registered(admin: signer) {
+    registerVoters(&admin);
+    registerVoters(&admin);
 }
 
 }
