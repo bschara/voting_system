@@ -3,6 +3,7 @@ module votingSystem::voteUtils {
 use std::simple_map::{Self, SimpleMap};
 use std::vector;
 use std::signer;
+use std::account;
 
   const USER_IS_NOT_REGISTERED: u64 = 1;
   const USER_HAS_ALREADY_VOTED: u64 = 2;
