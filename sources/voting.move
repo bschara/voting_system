@@ -20,49 +20,49 @@ struct candidateVotesCount has store, key {
 
 public entry fun registerVoters(acc: &signer) {
    let addr = signer::address_of(acc);
-   let registered : bool = simple_map::contains_key(&voteTracking, addr);
+   let registered : bool = simple_map::contains_key(&voteTracking.users, addr);
    assert!(registered == true, 3);
 
 
-   simple_map::add(&mut voteTracking, addr, false);
-   simple_map::add(&mut candidateVotesCount, addr, 0);
+   simple_map::add(&mut voteTracking.users, addr, false);
+   simple_map::add(&mut candidateVotesCount.voteCount, addr, 0);
 
 }
 
   public entry fun vote(acc: &signer, candidAdd: address) {
    let addr = signer::address_of(acc);
-   let registered : bool = simple_map::contains_key(&voteTracking, addr);
+   let registered : bool = simple_map::contains_key(&voteTracking.users, addr);
     assert!(registered == false, 1);
-   let hasVoted : bool = simple_map::borrow(&voteTracking, addr);
+   let hasVoted : bool = simple_map::borrow(&voteTracking.users, addr);
     assert!(hasVoted == true, 2);
             
-        let numVotes = simple_map::borrow(&candidateVotesCount, candidAdd);
-        simple_map::upsert(&mut candidateVotesCount, candidAdd, numVotes + 1);
-        simple_map::upsert(&mut voteTracking, addr, true);
+        let numVotes = simple_map::borrow(&candidateVotesCount.voteCount, candidAdd);
+        simple_map::upsert(&mut candidateVotesCount.voteCount, candidAdd, *numVotes + 1);
+        simple_map::upsert(&mut voteTracking.users, addr, true);
 
 }
 
 public fun getNumVoters() : u64 {
-  let numVoters : u64  = simple_map::length(&voteTracking);
+  let numVoters : u64  = simple_map::length(&voteTracking.users);
   return numVoters;
 }
 
 public fun getCandidateVoteCount(_address: address) : u64 {
-let candidVoteCount : u64 = simple_map::borrow(&candidateVotesCount, _address);
+let candidVoteCount : u64 = simple_map::borrow(&candidateVotesCount.voteCount, _address);
 return candidVoteCount; 
 
 }
 
 public entry fun getWinner() : address {
-   let size  = simple_map::length(&candidateVotesCount);
-   let keys : vector<u64> = simple_map::keys(&candidateVotesCount);
+   let size  = simple_map::length(&candidateVotesCount.voteCount);
+   let keys : vector<u64> = simple_map::keys(&candidateVotesCount.voteCount);
     
    let i : u64 = 0;
    let maxVotesCount : u64 = 0;
    let winner : address = 0x00;
     while(i < size){
        let candidate : address = *vector::borrow(&keys, i);
-       let votes : u64 = simple_map::borrow(&candidateVotesCount, &candidate);
+       let votes : u64 = simple_map::borrow(&candidateVotesCount.voteCount, &candidate);
      if(*votes > maxVotesCount){
        maxVotesCount = *votes;
        winner = candidate;
