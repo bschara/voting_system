@@ -48,7 +48,7 @@ public entry fun registerCandidates(acc: &signer) {
    let hasVoted : bool = simple_map::borrow(&voteTracking.users, addr);
     assert!(hasVoted == true, 2);
 
-        let candidAvailable : bool = simple_map::contains_key(&candidateVotesCount.voteCount, addr);  
+        let candidAvailable : bool = simple_map::contains_key(&candidateVotesCount.voteCount, candidAdd);  
        assert!(candidAvailable == false, 4);
  
         let numVotes = simple_map::borrow(&candidateVotesCount.voteCount, candidAdd);
