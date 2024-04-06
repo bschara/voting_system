@@ -19,11 +19,11 @@ struct candidateVotesCount has store, key {
 }
 
 public entry fun registerVoters(acc: &signer) {
+   let addr = signer::address_of(acc);
    let registered : bool = simple_map::contains_key(&voteTracking, addr);
    assert!(registered == true, 3);
 
 
-   let addr = signer::address_of(acc);
    simple_map::add(&mut voteTracking, addr, false);
    simple_map::add(&mut candidateVotesCount, addr, 0);
 
@@ -32,12 +32,11 @@ public entry fun registerVoters(acc: &signer) {
   public entry fun vote(acc: &signer, candidAdd: address) {
    let addr = signer::address_of(acc);
    let registered : bool = simple_map::contains_key(&voteTracking, addr);
-   let hasVoted : bool = simple_map::find(&voteTracking, addr);
-        
-        assert!(registered == false, 1);
-        assert!(hasVoted == true, 2);
+    assert!(registered == false, 1);
+   let hasVoted : bool = simple_map::borrow(&voteTracking, addr);
+    assert!(hasVoted == true, 2);
             
-        let numVotes = simple_map::find(&mut candidateVotesCount, candidAdd);
+        let numVotes = simple_map::borrow(&candidateVotesCount, candidAdd);
         simple_map::upsert(&mut candidateVotesCount, candidAdd, numVotes + 1);
         simple_map::upsert(&mut voteTracking, addr, true);
 
@@ -49,7 +48,7 @@ public fun getNumVoters() : u64 {
 }
 
 public fun getCandidateVoteCount(_address: address) : u64 {
-let candidVoteCount : u64 = simple_map::find(&candidateVotesCount, _address);
+let candidVoteCount : u64 = simple_map::borrow(&candidateVotesCount, _address);
 return candidVoteCount; 
 
 }
@@ -80,12 +79,11 @@ public entry fun getWinner() : address {
 
 #[test(admin = @my_addrx)]
 public entry fun test_flow(admin: signer)  {
-    let addr2 = @0x2;
     let voter = account::create_account_for_test(@0x3)
     registerVoters(&admin);
-    registerVoters(addr2);
-    vote(&admin, addr2);
-    getCandidateVoteCount(addr2);
+    registerVoters(&voter);
+    vote(&admin, &voter);
+    getCandidateVoteCount(&voter);
     getNumVoters();
     getWinner();
 }
@@ -94,20 +92,20 @@ public entry fun test_flow(admin: signer)  {
 #[test(admin = @my_addrx)]
 #[expected_failure(abort_code = USER_IS_NOT_REGISTERED)]
 public entry fun test_vote_without_being_registered(admin: signer) {
-    let addr2 = @0x2;
-    registerVoters(addr2);
-    vote(&admin, addr2);
+    let voter = account::create_account_for_test(@0x3)
+    registerVoters(&voter);
+    vote(&admin, &voter);
 }
 
 
 #[test(admin = @my_addrx)]
 #[expected_failure(abort_code = USER_HAS_ALREADY_VOTED)]
 public entry fun test_vote_twice(admin: signer)  {
-    let addr2 = @0x2;
+    let voter = account::create_account_for_test(@0x3)
     registerVoters(&admin);
-    registerVoters(addr2);
-    vote(&admin, addr2);
-    vote(&admin, addr2);
+    registerVoters(&voter);
+    vote(&admin, &voter);
+    vote(&admin, &voter);
 }
 
 #[test(admin = @my_addrx)]
