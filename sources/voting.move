@@ -121,7 +121,7 @@ public entry fun test_vote_without_being_registered(admin: signer) {
 public entry fun test_vote_twice(admin: signer)  {
     let voter = account::create_account_for_test(@0x3)
     registerVoters(&admin);
-    registerVoters(&voter);
+    registerCandidates(&voter);
     vote(&admin, &voter);
     vote(&admin, &voter);
 }
