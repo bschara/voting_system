@@ -83,6 +83,7 @@ public entry fun test_flow(admin: signer)  {
     let addr2 = @0x2;
     let voter = account::create_account_for_test(@0x3)
     registerVoters(&admin);
+    registerVoters(addr2);
     vote(&admin, addr2);
     getCandidateVoteCount(addr2);
     getNumVoters();
@@ -94,6 +95,7 @@ public entry fun test_flow(admin: signer)  {
 #[expected_failure(abort_code = USER_IS_NOT_REGISTERED)]
 public entry fun test_vote_without_being_registered(admin: signer) {
     let addr2 = @0x2;
+    registerVoters(addr2);
     vote(&admin, addr2);
 }
 
@@ -103,6 +105,7 @@ public entry fun test_vote_without_being_registered(admin: signer) {
 public entry fun test_vote_twice(admin: signer)  {
     let addr2 = @0x2;
     registerVoters(&admin);
+    registerVoters(addr2);
     vote(&admin, addr2);
     vote(&admin, addr2);
 }
